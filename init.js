@@ -143,6 +143,46 @@ var isEqual = function (a, b) {
   return true;
 };
 
+// iOS Safari paints a second native control under styled <select>s.
+// Keep the real select invisible-but-tappable and mirror its label onto
+// a .kr-mob-select-face sibling (see mobile.html wrappers).
+plugin.syncSelectFace = function(sel) {
+  if (!sel) return;
+  var $sel = $(sel);
+  var face = $sel.siblings('.kr-mob-select-face')[0];
+  if (!face) return;
+  var opt = sel.options[sel.selectedIndex];
+  face.textContent = opt ? opt.text : '';
+  // Accent swatches set an inline color on the <select>; mirror it
+  if (sel.id === 'accentSelect') {
+    face.style.color = sel.style.color || '';
+  } else {
+    face.style.color = '';
+  }
+};
+
+plugin.enhanceSelect = function(sel) {
+  if (!sel || !sel.tagName || sel.tagName.toLowerCase() !== 'select') return;
+  var $sel = $(sel);
+  if (!$sel.parent().hasClass('kr-mob-select')) {
+    var wrap = $('<div class="kr-mob-select"></div>');
+    var face = $('<span class="kr-mob-select-face" aria-hidden="true"></span>');
+    $sel.before(wrap);
+    wrap.append(face).append($sel);
+  }
+  $sel.off('.krMobSelect');
+  $sel.on('change.krMobSelect', function() { plugin.syncSelectFace(this); });
+  $sel.on('focus.krMobSelect', function() { $(this).parent().addClass('is-focus'); });
+  $sel.on('blur.krMobSelect', function() { $(this).parent().removeClass('is-focus'); });
+  plugin.syncSelectFace(sel);
+};
+
+plugin.enhanceSelects = function(root) {
+  $(root || document).find('select.form-select').each(function() {
+    plugin.enhanceSelect(this);
+  });
+};
+
 plugin.toggleDisplay = function(s) {
   if (s.css('display') == 'none') {
     s.css('display', '')
@@ -660,6 +700,7 @@ plugin.fillLimitSelects = function(total) {
       sel.append('<option' + (spd == current ? ' selected' : '') + ' value="' + spd + '">' + theConverter.speed(spd) + '</option>');
     });
     sel.append('<option' + ((current <= 0 || current >= 327625*1024) ? ' selected' : '') + ' value="' + 327625*1024 + '">' + theUILang.unlimited + '</option>');
+    plugin.syncSelectFace(sel[0]);
   };
   fillLimitSelect($('#dlLimit'), theWebUI.settings["webui.speedlistdl"], total.rateDL);
   fillLimitSelect($('#ulLimit'), theWebUI.settings["webui.speedlistul"], total.rateUL);
@@ -771,6 +812,7 @@ plugin.loadThemeSelect = function() {
     sel.append($('<option></option>').attr('value', t[0]).text(t[1]));
   });
   sel.val(this.currentTheme);
+  plugin.syncSelectFace(sel[0]);
 };
 
 plugin.currentAccent = 'primary'; /* the selected accent */
@@ -836,6 +878,7 @@ plugin.loadAccentSelect = function() {
   });
   sel.val(this.currentAccent);
   sel.css('color', 'var(--bs-' + plugin.effectiveAccent(this.currentAccent) + ')');
+  plugin.syncSelectFace(sel[0]);
 };
 
 // Server details akin to the desktop status bar
@@ -949,6 +992,7 @@ plugin.showSort = function() {
   });
   $('#sortOption').html(sortHtml);
   $('#sortOption option[value=' + sort + ']').prop('selected', true);
+  plugin.syncSelectFace($('#sortOption')[0]);
 
   plugin.showPage('torrentSort');
 };
@@ -994,7 +1038,9 @@ plugin.addTorrent = function() {
   }
   $('#tadd_label').val('').hide();
   $('#taddReturnSelect').hide();
+  sel.closest('.kr-mob-select').show();
   sel.show();
+  plugin.syncSelectFace(sel[0]);
 
   $('#torrent_file').val('');
   $('#torrentFileSend').prop('disabled', true);
@@ -1032,6 +1078,7 @@ plugin.fillDetails = function(d) {
   $('#torrentDetails #status td:last').text(theWebUI.getStatusIcon(d)[1] + ' ').append('<button class="btn btn-outline-secondary btn-sm" type="button" onclick="mobile.recheck();"><i class="bi bi-arrow-clockwise .icon-black"></i></button>');
   $('#torrentPriority option').prop('selected', false);
   $('#torrentPriority option[value=' + d.priority + ']').prop('selected', true);
+  plugin.syncSelectFace($('#torrentPriority')[0]);
   if (this.ratioGroupsLoaded) {
     $('#torrentRatioGrp option').prop('selected', false);
     if (d.ratiogroup) {
@@ -1039,6 +1086,7 @@ plugin.fillDetails = function(d) {
     } else {
       $('#torrentRatioGrp option[value=-1]').prop('selected', true);
     }
+    plugin.syncSelectFace($('#torrentRatioGrp')[0]);
   }
   if (this.throttleLoaded) {
     $('#torrentChannel option').prop('selected', false);
@@ -1047,6 +1095,7 @@ plugin.fillDetails = function(d) {
     } else {
       $('#torrentChannel option[value=-1]').prop('selected', true);
     }
+    plugin.syncSelectFace($('#torrentChannel')[0]);
   }
   this.fillLabel(d.label);
   $('#torrentDetails #done td:last').text(percent + '%');
@@ -1140,6 +1189,7 @@ plugin.editLabel = function() {
   });
 
   $('#torrentDetails #label td:last').empty().append(sel);
+  plugin.enhanceSelect(sel[0]);
   sel.focus();
 };
 
@@ -1834,7 +1884,7 @@ plugin.sendDataDir = function() {
 plugin.loadRatio = function () {
   var ratio = thePlugins.get("ratio");
   if (ratio.allStuffLoaded) {
-    $('#priority').after('<tr id="ratiogrp"><td></td><td><select id="torrentRatioGrp"></select></td></tr>');
+    $('#priority').after('<tr id="ratiogrp"><td></td><td><select id="torrentRatioGrp" class="form-select"></select></td></tr>');
     $('#torrentRatioGrp').change(function(){mobile.changeRatioGrp()});
     var ratioHTML = '<option value="-1">' + theUILang.mnuRatioUnlimited + '</option>'
     $.each(theWebUI.ratios, function(i, v) {
@@ -1842,6 +1892,7 @@ plugin.loadRatio = function () {
     });
     $('#torrentRatioGrp').html(ratioHTML);
     $('#ratiogrp').children('td:first').text(theUILang.ratio);
+    plugin.enhanceSelect($('#torrentRatioGrp')[0]);
   } else {
     setTimeout(function(){plugin.loadRatio()}, 1000);
   }
@@ -1850,7 +1901,7 @@ plugin.loadRatio = function () {
 plugin.loadThrottle = function () {
   var throttle = thePlugins.get("throttle");
   if (throttle.allStuffLoaded) {
-    $('#priority').after('<tr id="throttle"><td></td><td><select id="torrentChannel"></select></td></tr>');
+    $('#priority').after('<tr id="throttle"><td></td><td><select id="torrentChannel" class="form-select"></select></td></tr>');
     $('#torrentChannel').change(function(){mobile.changeChannel()});
     var throttleHTML = '<option value="-1">' + theUILang.mnuUnlimited + '</option>';
     $.each(theWebUI.throttles, function(i, v) {
@@ -1858,6 +1909,7 @@ plugin.loadThrottle = function () {
     });
     $('#torrentChannel').html(throttleHTML);
     $('#throttle').children('td:first').text(theUILang.throttle);
+    plugin.enhanceSelect($('#torrentChannel')[0]);
   } else {
     setTimeout(function(){plugin.loadThrottle()}, 1000);
   }
@@ -2456,6 +2508,7 @@ plugin.init = function() {
 
     success: function(data, textStatus) {
       $('body').html(data);
+      plugin.enhanceSelects(document.body);
 
       // The desktop engine keeps polling ?list=1&getmsg=1 on its own
       // schedule underneath the mobile UI. Instead of running a second,
@@ -2590,6 +2643,7 @@ plugin.init = function() {
         plugin.applyAccentColor(this.value);
         plugin.storeSetting('accent', this.value);
         $(this).css('color', 'var(--bs-' + plugin.effectiveAccent(this.value) + ')');
+        plugin.syncSelectFace(this);
       });
 
       $('input[id=torrent_file]').change(function() {
@@ -2609,6 +2663,7 @@ plugin.init = function() {
         '<option value="0">' + theUILang.Dont_download + '</option>'
       );
       $('#torrentPriority').change(function(){mobile.changePriority()});
+      plugin.syncSelectFace($('#torrentPriority')[0]);
 
       var makeAddRequest = function(frm)
       {
@@ -2673,7 +2728,7 @@ plugin.init = function() {
       $('#tadd_label_select').change(function() {
         var index = this.selectedIndex;
         if (index == 1) {
-          $(this).hide();
+          $(this).closest('.kr-mob-select').hide();
           $('#tadd_label').show();
           $('#taddReturnSelect').show();
         } else if (index == 0) {
@@ -2685,7 +2740,9 @@ plugin.init = function() {
       $('#taddReturnSelect').click(function() {
         $(this).hide();
         $('#tadd_label').val('').hide();
-        $('#tadd_label_select').prop('selectedIndex', 0).show();
+        $('#tadd_label_select').prop('selectedIndex', 0);
+        $('#tadd_label_select').closest('.kr-mob-select').show();
+        plugin.syncSelectFace($('#tadd_label_select')[0]);
       });
       $('#torrent_file').change(function() {
         $('#torrentFileSend').prop('disabled', this.files.length === 0);

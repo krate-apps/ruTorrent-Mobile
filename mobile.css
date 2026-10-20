@@ -623,8 +623,7 @@ tr.errorYes .kr-mob-status-pill { color: var(--kr-state-error); background: colo
 	color: var(--kr-foreground);
 }
 
-.form-control,
-.form-select {
+.form-control {
 	box-sizing: border-box;
 	width: 100%;
 	max-width: 100%;
@@ -639,33 +638,81 @@ tr.errorYes .kr-mob-status-pill { color: var(--kr-state-error); background: colo
 	font-family: var(--kr-font);
 	font-size: 15px;
 	line-height: 1.25;
-	vertical-align: middle;
 }
-/* iOS Safari paints a second native control under a custom-styled
-   <select> unless appearance is forced off and the chevron is ours. */
-.form-select {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
-	padding-right: 2.25rem;
-	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-	background-repeat: no-repeat;
-	background-position: right 0.75rem center;
-	background-size: 16px 12px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-:root[data-kr-variant="light"] .form-select,
-html[data-bs-theme="light"] .form-select {
-	background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2352525b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-}
-.form-select::-ms-expand { display: none; }
-.form-control:focus,
-.form-select:focus {
+.form-control:focus {
 	outline: none;
 	border-color: var(--kr-primary);
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--kr-primary) 28%, transparent);
 }
+
+/* iOS paints a second native <select> chrome under any custom-styled
+   control. Hide the real select (still tappable) and show a face. */
+.kr-mob-select {
+	--kr-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+	position: relative;
+	display: block;
+	box-sizing: border-box;
+	width: 100%;
+	height: 44px;
+	margin: 0 0 0 0;
+	border: 1px solid var(--kr-border);
+	border-radius: var(--kr-radius);
+	background-color: var(--kr-input);
+	overflow: hidden;
+}
+:root[data-kr-variant="light"] .kr-mob-select,
+html[data-bs-theme="light"] .kr-mob-select {
+	--kr-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2352525b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+.kr-mob-select.is-focus {
+	border-color: var(--kr-primary);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--kr-primary) 28%, transparent);
+}
+.kr-mob-select-face {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	padding: 0 2.25rem 0 12px;
+	color: var(--kr-foreground);
+	font-family: var(--kr-font);
+	font-size: 15px;
+	line-height: 1.25;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	pointer-events: none;
+	background-image: var(--kr-select-chevron);
+	background-repeat: no-repeat;
+	background-position: right 0.75rem center;
+	background-size: 16px 12px;
+	z-index: 1;
+}
+.kr-mob-select > select.form-select {
+	position: absolute;
+	inset: 0;
+	z-index: 2;
+	box-sizing: border-box;
+	width: 100% !important;
+	max-width: none !important;
+	height: 100% !important;
+	min-height: 0 !important;
+	margin: 0;
+	padding: 0;
+	border: 0 !important;
+	border-radius: 0;
+	opacity: 0;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	background: transparent !important;
+	background-image: none !important;
+	box-shadow: none !important;
+	color: transparent;
+	font-size: 16px;
+	cursor: pointer;
+}
+.kr-mob-select > select.form-select::-ms-expand { display: none; }
 
 .btn,
 button.btn,
