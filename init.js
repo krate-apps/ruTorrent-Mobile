@@ -2250,11 +2250,66 @@ plugin.update = function(singleUpdate) {
 };
 
 /*** Bootstrapping: device detection, plugin takeover and initialization ***/
+
+// True when this client should use the mobile shell. Covers normal phone
+// UAs, iOS "Request Desktop Website" (Macintosh UA + multitouch), and a
+// last-resort narrow-touch viewport check for engines that also spoof
+// pointer/hover media queries.
+plugin.detectMobileDevice = function() {
+  var ua = navigator.userAgent || '';
+  var platform = navigator.platform || '';
+  var touchPoints = navigator.maxTouchPoints || 0;
+  var hasTouch = touchPoints > 0 || ('ontouchstart' in window);
+
+  if (navigator.userAgentData && navigator.userAgentData.mobile === true) {
+    return true;
+  }
+  // MDN phone tokens — also matches Android Mobile and legacy phones
+  if (/Mobi|iP(hone|od)|Android.*Mobile|Opera Mini|webOS|BlackBerry|IEMobile/i.test(ua)) {
+    return true;
+  }
+  // iPadOS / iPhone desktop-site mode: Mac UA or MacIntel platform + multitouch
+  if ((/Macintosh/i.test(ua) || platform === 'MacIntel') && touchPoints > 1) {
+    return true;
+  }
+  if (plugin.tabletsDetect) {
+    if (/android|ipad|playbook|silk/i.test(ua)) {
+      return true;
+    }
+    try {
+      if (window.matchMedia) {
+        if (window.matchMedia('(pointer: coarse) and (hover: none)').matches) {
+          return true;
+        }
+        // Phone-width CSS viewport + touch: catches desktop-spoofed phones
+        // that also spoof hover/pointer. 480px stays below typical desktop
+        // window sizes while covering every current iPhone logical width.
+        if (window.matchMedia('(max-width: 480px)').matches && hasTouch) {
+          return true;
+        }
+      }
+    } catch (e) {}
+  }
+  // iOS Safari exposes navigator.standalone (boolean); combine with a
+  // phone-sized screen as a final signal when UA/media queries lie
+  var shortSide = Math.min(screen.width || 9999, screen.height || 9999);
+  if (typeof navigator.standalone !== 'undefined' && hasTouch && shortSide <= 500) {
+    return true;
+  }
+  if (shortSide <= 500 && touchPoints > 1) {
+    return true;
+  }
+  return false;
+};
+
 plugin.disableOthers = function() {
-  var start = (window.location.href.indexOf('mobile=1') > 0);
+  var start = (window.location.href.indexOf('mobile=1') > 0) ||
+    (window.location.href.indexOf('mobile=true') > 0);
 
   if ((!start) && this.enableAutodetect) {
-    start = jQuery.browser.mobile;
+    start = plugin.detectMobileDevice();
+    jQuery.browser = jQuery.browser || {};
+    jQuery.browser.mobile = !!start;
   }
 
   if (start) {
@@ -2346,6 +2401,12 @@ plugin.disableOthers = function() {
     theWebUI.config = function(data)
     {
       plugin.config.call(this,data);
+      plugin.init();
+    }
+    // If config already finished before this plugin hooked it (unusual
+    // load order), take over immediately instead of leaving a stubbed
+    // desktop UI with no mobile shell.
+    if (theWebUI.configured) {
       plugin.init();
     }
   } else {
@@ -2693,6 +2754,18 @@ plugin.init = function() {
       // One-shot fetch for the initial paint; periodic refreshes arrive
       // through the theWebUI.addTorrents hook above
       plugin.update(true);
+    },
+    error: function(xhr, status, text) {
+      console.error('mobile: failed to load mobile.html (' + status + (text ? ': ' + text : '') + ')');
+      // Surface a visible failure instead of a stubbed desktop layout
+      try {
+        document.body.innerHTML =
+          '<div style="padding:1.5rem;font:16px/1.4 system-ui,sans-serif;color:#eee;background:#111;min-height:100vh">' +
+          '<h1 style="font-size:1.25rem;margin:0 0 .75rem">Mobile UI failed to load</h1>' +
+          '<p style="margin:0 0 1rem;opacity:.85">Could not fetch plugins/mobile/mobile.html. ' +
+          'Hard-refresh, or open with <code>?mobile=1</code> after fixing deploy.</p>' +
+          '<p style="margin:0;opacity:.6;font-size:.9rem">' + status + (text ? ': ' + text : '') + '</p></div>';
+      } catch (e) {}
     }
   });
 };
@@ -2764,26 +2837,12 @@ plugin.onLangLoaded = function() {
 };
 
 /**
-* jQuery.browser.mobile will be true if the browser is a mobile device
+* jQuery.browser.mobile will be true if the browser is a mobile device.
+* Kept in sync with plugin.detectMobileDevice() so any late readers (and
+* the disableOthers autodetect path) see the same answer.
 **/
 jQuery.browser = jQuery.browser || {};
-// Phones: explicit engine hint where available (Chromium), otherwise the
-// MDN-recommended user agent tokens, which cover all current phone browsers
-jQuery.browser.mobile =
-  (navigator.userAgentData && navigator.userAgentData.mobile === true) ||
-  /Mobi|iP(hone|od)|Opera Mini/i.test(navigator.userAgent);
-
-if ((plugin.tabletsDetect) && (!jQuery.browser.mobile)) {
-  jQuery.browser.mobile =
-    // Legacy tablet user agents
-    /android|ipad|playbook|silk/i.test(navigator.userAgent) ||
-    // Modern iPadOS reports a desktop Macintosh user agent; real Macs
-    // report maxTouchPoints of 0, iPads report 5
-    (/Macintosh/i.test(navigator.userAgent) && navigator.maxTouchPoints > 1) ||
-    // Touch-primary devices without hover (excludes touch-screen laptops,
-    // whose primary pointer is a fine, hover-capable mouse)
-    (!!window.matchMedia && window.matchMedia('(pointer: coarse) and (hover: none)').matches);
-}
+jQuery.browser.mobile = plugin.detectMobileDevice();
 
 // Global alias used by the inline handlers in mobile.html and generated markup
 window.mobile = plugin;
