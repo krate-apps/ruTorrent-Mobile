@@ -93,7 +93,7 @@
       <table class="table table-striped detailsPage kr-mob-kv" id="detailsDetailsPage">
         <tbody>
           <tr id="status"><td></td><td></td></tr>
-          <tr id="priority"><td></td><td><div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="torrentPriority" class="form-select"></select></div></td></tr>
+          <tr id="priority"><td></td><td><select id="torrentPriority" class="kr-mob-native-select" data-kr-native></select></td></tr>
           <tr id="label"><td></td><td></td></tr>
           <tr id="done"><td></td><td></td></tr>
           <tr id="downloaded"><td></td><td></td></tr>
@@ -157,7 +157,7 @@
     <div class="mainContainer container kr-mob-page kr-mob-sheet" id="torrentSort" style="display:none;">
       <div class="form-group">
         <label class="select" for="sortOption"><h5></h5></label>
-        <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="sortOption" class="form-select"></select></div>
+        <select id="sortOption" class="kr-mob-native-select" data-kr-native></select>
         <div class="radio kr-mob-radio-row">
           <label id="sortAsc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_asc" value=""><i class="bi bi-sort-down-alt"></i></label>
           <label id="sortDesc" class="radio-inline"><input type="radio" name="inlineRadioOptions" id="sort_desc" value="-"><i class="bi bi-sort-down"></i></label>
@@ -186,19 +186,19 @@
     <div class="mainContainer container kr-mob-page kr-mob-sheet" id="globalSettings" style="display:none;">
       <div class="form-group">
         <label class="select" for="dlLimit"><h5></h5></label>
-        <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="dlLimit" class="form-select"></select></div>
+        <select id="dlLimit" class="kr-mob-native-select" data-kr-native></select>
       </div>
       <div class="form-group">
         <label class="select" for="ulLimit"><h5></h5></label>
-        <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="ulLimit" class="form-select"></select></div>
+        <select id="ulLimit" class="kr-mob-native-select" data-kr-native></select>
       </div>
       <div class="form-group">
         <label class="select" for="themeSelect"><h5></h5></label>
-        <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="themeSelect" class="form-select"></select></div>
+        <select id="themeSelect" class="kr-mob-native-select" data-kr-native></select>
       </div>
       <div class="form-group">
         <label class="select" for="accentSelect"><h5></h5></label>
-        <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="accentSelect" class="form-select"></select></div>
+        <select id="accentSelect" class="kr-mob-native-select" data-kr-native></select>
       </div>
       <h5 id="serverInfoHeader"></h5>
       <table class="table table-striped kr-mob-kv" id="serverInfo">
@@ -226,7 +226,7 @@
         <div class="checkbox"><label id="fastResume"><input type="checkbox" name="fast_resume" id="fast_resume"></label></div>
         <div class="checkbox"><label id="randomizeHash"><input type="checkbox" name="randomize_hash" id="randomize_hash"></label></div>
         <div id="labelBlock">
-          <div class="kr-mob-select"><span class="kr-mob-select-face" aria-hidden="true"></span><select id="tadd_label_select" class="form-select"></select></div>
+          <select id="tadd_label_select" class="kr-mob-native-select" data-kr-native></select>
           <input class="form-control" type="text" id="tadd_label" name="tadd_label" placeholder="Label" style="display:none;">
           <button type="button" id="taddReturnSelect" class="btn btn-outline-secondary" style="display:none;"></button>
         </div>

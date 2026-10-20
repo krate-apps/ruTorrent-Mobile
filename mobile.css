@@ -646,85 +646,43 @@ tr.errorYes .kr-mob-status-pill { color: var(--kr-state-error); background: colo
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--kr-primary) 28%, transparent);
 }
 
-/* iOS paints a second native <select> chrome under any custom-styled
-   control. Hide the real select (still tappable) and show a face. */
-.kr-mob-select {
-	--kr-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23a3a3a3' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-	position: relative;
+/* Native <select> only — no face overlay (that caused iOS double-text). */
+.kr-mob-native-select {
+	--kr-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m3 6 5 5 5-5' fill='none' stroke='%23a3a3a3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 	display: block;
 	box-sizing: border-box;
 	width: 100%;
+	max-width: 100%;
+	min-height: 44px;
 	height: 44px;
-	margin: 0 0 0 0;
+	margin: 0;
+	padding: 0 36px 0 12px;
+	font-family: var(--kr-font);
+	font-size: 16px;
+	line-height: 44px;
+	color: var(--kr-foreground);
+	background-color: var(--kr-input);
+	background-image: var(--kr-select-chevron);
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 16px;
 	border: 1px solid var(--kr-border);
 	border-radius: var(--kr-radius);
-	background-color: var(--kr-input);
-	overflow: hidden;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	cursor: pointer;
 }
-:root[data-kr-variant="light"] .kr-mob-select,
-html[data-bs-theme="light"] .kr-mob-select {
-	--kr-select-chevron: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%2352525b' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+:root[data-kr-variant="light"] .kr-mob-native-select,
+html[data-bs-theme="light"] .kr-mob-native-select {
+	--kr-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath d='m3 6 5 5 5-5' fill='none' stroke='%2352525b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 }
-.kr-mob-select.is-focus {
+.kr-mob-native-select:focus {
+	outline: none;
 	border-color: var(--kr-primary);
 	box-shadow: 0 0 0 3px color-mix(in srgb, var(--kr-primary) 28%, transparent);
 }
-.kr-mob-select-face {
-	position: absolute;
-	inset: 0;
-	display: flex;
-	align-items: center;
-	padding: 0 2.25rem 0 12px;
-	color: var(--kr-foreground);
-	font-family: var(--kr-font);
-	font-size: 15px;
-	line-height: 1.25;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	pointer-events: none;
-	background-image: var(--kr-select-chevron);
-	background-repeat: no-repeat;
-	background-position: right 0.75rem center;
-	background-size: 16px 12px;
-	z-index: 1;
-}
-/* iOS ignores opacity:0 on <select> and still paints the closed-state
-   label; use a near-zero opacity (Ionic pattern) plus transparent fill. */
-.kr-mob-select > select.form-select {
-	position: absolute;
-	inset: 0;
-	z-index: 2;
-	box-sizing: border-box;
-	width: 100% !important;
-	max-width: none !important;
-	height: 100% !important;
-	min-height: 0 !important;
-	margin: 0 !important;
-	padding: 0 !important;
-	border: 0 !important;
-	border-radius: 0 !important;
-	opacity: 0.001 !important;
-	-webkit-appearance: none !important;
-	-moz-appearance: none !important;
-	appearance: none !important;
-	background: transparent !important;
-	background-color: transparent !important;
-	background-image: none !important;
-	box-shadow: none !important;
-	color: transparent !important;
-	-webkit-text-fill-color: transparent !important;
-	text-shadow: none !important;
-	font-size: 16px !important;
-	line-height: 44px !important;
-	cursor: pointer;
-}
-.kr-mob-select > select.form-select::-ms-expand { display: none; }
-.kr-mob-select > select.form-select option {
-	color: CanvasText;
-	-webkit-text-fill-color: CanvasText;
-	background-color: Canvas;
-}
+.kr-mob-native-select::-ms-expand { display: none; }
 
 .btn,
 button.btn,
