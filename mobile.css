@@ -161,12 +161,13 @@ html, body {
 }
 
 .kr-mob-logo {
-	width: 22px;
-	height: 22px;
+	width: 28px;
+	height: 28px;
 	flex: none;
-	border-radius: 6px;
-	object-fit: cover;
+	border-radius: 0;
+	object-fit: contain;
 	display: block;
+	background: transparent;
 }
 
 .kr-mob-title {
@@ -688,6 +689,8 @@ html[data-bs-theme="light"] .kr-mob-select {
 	background-size: 16px 12px;
 	z-index: 1;
 }
+/* iOS ignores opacity:0 on <select> and still paints the closed-state
+   label; use a near-zero opacity (Ionic pattern) plus transparent fill. */
 .kr-mob-select > select.form-select {
 	position: absolute;
 	inset: 0;
@@ -697,22 +700,31 @@ html[data-bs-theme="light"] .kr-mob-select {
 	max-width: none !important;
 	height: 100% !important;
 	min-height: 0 !important;
-	margin: 0;
-	padding: 0;
+	margin: 0 !important;
+	padding: 0 !important;
 	border: 0 !important;
-	border-radius: 0;
-	opacity: 0;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
+	border-radius: 0 !important;
+	opacity: 0.001 !important;
+	-webkit-appearance: none !important;
+	-moz-appearance: none !important;
+	appearance: none !important;
 	background: transparent !important;
+	background-color: transparent !important;
 	background-image: none !important;
 	box-shadow: none !important;
-	color: transparent;
-	font-size: 16px;
+	color: transparent !important;
+	-webkit-text-fill-color: transparent !important;
+	text-shadow: none !important;
+	font-size: 16px !important;
+	line-height: 44px !important;
 	cursor: pointer;
 }
 .kr-mob-select > select.form-select::-ms-expand { display: none; }
+.kr-mob-select > select.form-select option {
+	color: CanvasText;
+	-webkit-text-fill-color: CanvasText;
+	background-color: Canvas;
+}
 
 .btn,
 button.btn,

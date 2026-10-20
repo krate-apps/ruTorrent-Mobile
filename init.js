@@ -1,4 +1,15 @@
 /*** Configurable Options ***/
+// Asset URLs must include plugin.version: core cacheBust() only keys on
+// theWebUI.version, so mobile.css/html would otherwise stay stuck in the
+// browser cache across plugin releases.
+plugin.assetURL = function(path) {
+  var sep = (path.indexOf('?') === -1) ? '?' : '&';
+  var core = (typeof theWebUI !== 'undefined' && theWebUI.version)
+    ? String(theWebUI.version).replace(/\./g, '') : '0';
+  var plg = String(plugin.version != null ? plugin.version : '0').replace(/\./g, '');
+  return path + sep + 'v=' + core + '-' + plg;
+};
+
 plugin.enableAutodetect = true;
 plugin.tabletsDetect = true;
 plugin.eraseWithDataDefault = false;
@@ -2503,7 +2514,7 @@ plugin.init = function() {
     // init.js/CSS assets: markup and code are coupled (element ids), so
     // a release must refresh both together instead of running new code
     // against a stale cached mobile.html
-    url: cacheBust(this.path + 'mobile.html'),
+    url: plugin.assetURL(this.path + 'mobile.html'),
     processData: false,
 
     success: function(data, textStatus) {
@@ -2588,7 +2599,12 @@ plugin.init = function() {
         return plugin.isOption(plugin.accentColors, v);
       }, plugin.accentColor));
       plugin.loadLang();
-      plugin.loadMainCSS();
+      // loadMainCSS → injectCSS → cacheBust(core only); load with plugin
+      // version so CSS updates actually reach the phone
+      $('link[rel=stylesheet]').filter(function() {
+        return /plugins\/mobile\/mobile\.css/i.test(this.href);
+      }).remove();
+      $('<link rel="stylesheet">').attr('href', plugin.assetURL(plugin.path + 'mobile.css')).appendTo('head');
       $('head').append('<meta name="apple-mobile-web-app-capable" content="yes" />');
       // viewport-fit=cover is required for env(safe-area-inset-*) to report
       // the home-indicator inset on iOS
